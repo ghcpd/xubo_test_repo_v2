@@ -6,14 +6,16 @@ app = Flask(__name__, template_folder='templates', static_folder='static')
 
 @app.route('/')
 def index():
-    # BUG: wrong data path (missing data/ prefix) leading to FileNotFoundError
-    df = load_data('sample_sales.csv')
+    base_dir = os.path.dirname(os.path.dirname(__file__))
+    data_path = os.path.join(base_dir, 'data', 'sample_sales.csv')
+    df = load_data(data_path)
     cat = total_sales_by_category(df)
     trend = monthly_trend(df)
     bar = generate_bar_chart(cat)
     line = generate_line_chart(trend)
-    # Return a simple page with placeholders (not rendering figures correctly)
-    return f"<h1>Dashboard (broken)</h1><div>Bar: {bar.to_html()}</div><div>Line: {line.to_html()}</div>"
+    bar_html = bar.to_html(full_html=False, include_plotlyjs='cdn')
+    line_html = line.to_html(full_html=False, include_plotlyjs=False)
+    return f"<h1>Dashboard</h1><div>{bar_html}</div><div>{line_html}</div>"
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
