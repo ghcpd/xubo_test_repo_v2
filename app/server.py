@@ -13,7 +13,7 @@ def index():
     trend = monthly_trend(df)
     bar = generate_bar_chart(cat)
     line = generate_line_chart(trend)
-    bar_html = bar.to_html(full_html=False, include_plotlyjs='cdn')
+    bar_html = bar.to_html(full_html=False, include_plotlyjs=True)
     line_html = line.to_html(full_html=False, include_plotlyjs=False)
     return f"<h1>Dashboard</h1><div>{bar_html}</div><div>{line_html}</div>"
 
