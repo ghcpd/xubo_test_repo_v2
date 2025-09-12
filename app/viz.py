@@ -1,6 +1,8 @@
 import pandas as pd
 import plotly.express as px
+from functools import lru_cache
 
+@lru_cache(maxsize=1)
 def load_data(path):
     df = pd.read_csv(path, parse_dates=['date'])
     # Ensure numeric sales for aggregations
