@@ -1,26 +1,29 @@
 import pandas as pd
 import plotly.express as px
+from functools import lru_cache
 
+@lru_cache(maxsize=4)
 def load_data(path):
-    # BUG: parse_dates is False and date column left as string; also silent on missing file
-    df = pd.read_csv(path)
+    df = pd.read_csv(path, parse_dates=['date'])
+    # Ensure sales is numeric
+    df['sales'] = pd.to_numeric(df['sales'], errors='coerce').fillna(0)
     return df
 
 def total_sales_by_category(df):
-    # BUG: if sales column is string, this concatenates; also doesn't handle missing categories
-    grouped = df.groupby('category')['sales'].sum().reset_index()
+    grouped = df.groupby('category', dropna=False)['sales'].sum().reset_index()
     return grouped
 
 def monthly_trend(df):
-    # BUG: tries to group by 'month' which doesn't exist; also uses string slicing incorrectly
-    df['month'] = df['date'].apply(lambda x: x[:7])  # if datetime, this fails; if string OK
-    trend = df.groupby('month')['sales'].sum().reset_index()
+    # Ensure we have a month column derived from datetime
+    if not pd.api.types.is_datetime64_any_dtype(df['date']):
+        df['date'] = pd.to_datetime(df['date'], errors='coerce')
+    df['month'] = df['date'].dt.to_period('M').astype(str)
+    trend = df.groupby('month')['sales'].sum().reset_index().sort_values('month')
     return trend
 
 def generate_bar_chart(grouped_df):
-    # BUG: missing hover info and using wrong labels
     fig = px.bar(grouped_df, x='category', y='sales', title='Sales by Category')
-    # Intentionally remove hovertemplate to simulate missing tooltip behavior
+    fig.update_traces(hovertemplate='Category=%{x}<br>Sales=%{y:.2f}')
     return fig
 
 def generate_line_chart(trend_df):
