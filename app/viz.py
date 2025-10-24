@@ -2,25 +2,41 @@ import pandas as pd
 import plotly.express as px
 
 def load_data(path):
-    # BUG: parse_dates is False and date column left as string; also silent on missing file
-    df = pd.read_csv(path)
-    return df
+    """Load data from CSV file with proper date parsing and error handling."""
+    try:
+        df = pd.read_csv(path, parse_dates=['date'])
+        return df
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Data file not found: {path}")
+    except Exception as e:
+        raise Exception(f"Error loading data from {path}: {e}")
 
 def total_sales_by_category(df):
-    # BUG: if sales column is string, this concatenates; also doesn't handle missing categories
+    """Aggregate total sales by category with proper numeric handling."""
+    # Ensure sales column is numeric
+    df = df.copy()
+    df['sales'] = pd.to_numeric(df['sales'], errors='coerce')
     grouped = df.groupby('category')['sales'].sum().reset_index()
     return grouped
 
 def monthly_trend(df):
-    # BUG: tries to group by 'month' which doesn't exist; also uses string slicing incorrectly
-    df['month'] = df['date'].apply(lambda x: x[:7])  # if datetime, this fails; if string OK
+    """Calculate monthly sales trend with proper datetime handling."""
+    df = df.copy()
+    # Ensure sales column is numeric
+    df['sales'] = pd.to_numeric(df['sales'], errors='coerce')
+    # Extract year-month from datetime
+    df['month'] = df['date'].dt.to_period('M').astype(str)
     trend = df.groupby('month')['sales'].sum().reset_index()
     return trend
 
 def generate_bar_chart(grouped_df):
-    # BUG: missing hover info and using wrong labels
-    fig = px.bar(grouped_df, x='category', y='sales', title='Sales by Category')
-    # Intentionally remove hovertemplate to simulate missing tooltip behavior
+    """Generate bar chart with interactive tooltips."""
+    fig = px.bar(grouped_df, x='category', y='sales', 
+                 title='Sales by Category',
+                 labels={'sales': 'Total Sales ($)', 'category': 'Category'},
+                 hover_data={'sales': ':.2f'})
+    # Customize hover template for better interactivity
+    fig.update_traces(hovertemplate='<b>%{x}</b><br>Sales: $%{y:,.2f}<extra></extra>')
     return fig
 
 def generate_line_chart(trend_df):
