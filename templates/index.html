@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body {
+      margin: 0;
+      padding: 2rem;
+      background: #f6f6f6;
+      color: #222;
+    }
+    h1 {
+      margin-bottom: 1.5rem;
+      font-size: 2rem;
+      text-align: center;
+    }
+    main {
+      display: grid;
+      gap: 2rem;
+    }
+    section {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      overflow: hidden;
+      padding: 1rem 1.5rem;
+    }
+    section h2 {
+      margin: 0 0 1rem;
+      font-size: 1.3rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #101419;
+        color: #f1f5f9;
+      }
+      section {
+        background: #1f2937;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{{ title }}</h1>
+  </header>
+  <main>
+    <section id="category-bar">
+      <h2>Sales by Category</h2>
+      {{ bar_chart | safe }}
+    </section>
+    <section id="trend-line">
+      <h2>Monthly Sales Trend</h2>
+      {{ line_chart | safe }}
+    </section>
+  </main>
+</body>
+</html>
+
